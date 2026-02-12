@@ -1,0 +1,16 @@
+services:
+  modulith-db:
+    image: postgres:16-alpine
+    container_name: modulith-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: modulith
+      POSTGRES_PASSWORD: modulith_pass
+      POSTGRES_DB: modulith_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - modulith_pgdata:/var/lib/postgresql/data
+
+volumes:
+  modulith_pgdata:

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/Modulith.Api/Modulith.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Auth/">
+    <Project Path="src/Modules/Auth/Auth.Application/Auth.Application.csproj" />
+    <Project Path="src/Modules/Auth/Auth.Domain/Auth.Domain.csproj" />
+    <Project Path="src/Modules/Auth/Auth.Infrastructure/Auth.Infrastructure.csproj" />
+    <Project Path="src/Modules/Auth/Auth.Presentation/Auth.Presentation.csproj" />
+  </Folder>
+</Solution>
