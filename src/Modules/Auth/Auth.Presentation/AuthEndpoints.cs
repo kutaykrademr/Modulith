@@ -15,7 +15,8 @@ public static class AuthEndpoints
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/auth")
-            .WithTags("Auth");
+            .WithTags("Auth")
+            .RequireRateLimiting("fixed");
 
         group.MapPost("/register", async (RegisterCommand command, IMediator mediator) =>
         {
@@ -31,7 +32,8 @@ public static class AuthEndpoints
         })
         .WithName("Register")
         .Produces<RegisterResponse>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status409Conflict);
+        .Produces(StatusCodes.Status409Conflict)
+        .RequireRateLimiting("register");
 
         group.MapPost("/login", async (LoginCommand command, IMediator mediator) =>
         {
@@ -40,14 +42,15 @@ public static class AuthEndpoints
                 var result = await mediator.Send(command);
                 return Results.Ok(result);
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
-                return Results.Unauthorized();
+                return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status401Unauthorized);
             }
         })
         .WithName("Login")
         .Produces<TokenResponse>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status401Unauthorized);
+        .Produces(StatusCodes.Status401Unauthorized)
+        .RequireRateLimiting("login");
 
         group.MapPost("/refresh", async (RefreshTokenCommand command, IMediator mediator) =>
         {
@@ -56,9 +59,9 @@ public static class AuthEndpoints
                 var result = await mediator.Send(command);
                 return Results.Ok(result);
             }
-            catch (UnauthorizedAccessException)
+            catch (UnauthorizedAccessException ex)
             {
-                return Results.Unauthorized();
+                return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status401Unauthorized);
             }
         })
         .WithName("RefreshToken")
