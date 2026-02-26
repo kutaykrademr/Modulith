@@ -1,8 +1,10 @@
 using Auth.Application.Auth;
+using Auth.Application.ForgotPassword;
 using Auth.Application.Login;
 using Auth.Application.RefreshToken;
 using Auth.Application.Register;
 using Auth.Application.ResendVerification;
+using Auth.Application.ResetPassword;
 using Auth.Application.RevokeToken;
 using Auth.Application.VerifyEmail;
 using MediatR;
@@ -112,6 +114,30 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .RequireRateLimiting("register");
 
+        // --- Password Reset Endpoints ---
+
+        group.MapPost("/forgot-password", async (ForgotPasswordCommand command, IMediator mediator) =>
+        {
+            await mediator.Send(command);
+            return Results.Ok(new { message = "Şifre sıfırlama bağlantısı email adresinize gönderildi." });
+        })
+        .WithName("ForgotPassword")
+        .Produces(StatusCodes.Status200OK)
+        .RequireRateLimiting("register");
+
+        group.MapPost("/reset-password", async (ResetPasswordCommand command, IMediator mediator) =>
+        {
+            var result = await mediator.Send(command);
+            return result
+                ? Results.Ok(new { message = "Şifreniz başarıyla güncellendi." })
+                : Results.BadRequest(new { error = "Geçersiz veya süresi dolmuş sıfırlama bağlantısı." });
+        })
+        .WithName("ResetPassword")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .RequireRateLimiting("register");
+
         return app;
     }
 }
+
