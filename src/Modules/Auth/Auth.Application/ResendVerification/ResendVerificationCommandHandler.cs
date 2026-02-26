@@ -1,6 +1,7 @@
 using Auth.Domain.Abstractions;
 using MediatR;
 using Microsoft.Extensions.Configuration;
+using Auth.Application.Constants;
 
 namespace Auth.Application.ResendVerification;
 
@@ -27,7 +28,7 @@ public sealed class ResendVerificationCommandHandler : IRequestHandler<ResendVer
             return false;
 
         if (user.IsEmailVerified)
-            throw new InvalidOperationException("Bu email adresi zaten doğrulanmış.");
+            throw new InvalidOperationException(AuthMessages.EmailAlreadyVerified);
 
         // Yeni token üret
         user.GenerateEmailVerificationToken();

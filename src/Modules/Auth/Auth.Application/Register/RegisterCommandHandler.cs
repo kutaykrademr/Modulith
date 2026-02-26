@@ -2,6 +2,7 @@ using Auth.Domain.Abstractions;
 using Auth.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Configuration;
+using Auth.Application.Constants;
 
 namespace Auth.Application.Register;
 
@@ -30,7 +31,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         var exists = await _userRepository.ExistsAsync(request.Email, cancellationToken);
         if (exists)
         {
-            throw new InvalidOperationException($"'{request.Email}' adresi ile kayıtlı bir kullanıcı zaten mevcut.");
+            throw new InvalidOperationException(AuthMessages.UserAlreadyExists(request.Email));
         }
 
         // Password'ü hashle

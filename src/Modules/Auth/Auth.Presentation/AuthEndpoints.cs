@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
+using Auth.Application.Constants;
 
 namespace Auth.Presentation;
 
@@ -77,7 +78,7 @@ public static class AuthEndpoints
         group.MapPost("/revoke", async (RevokeTokenCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
-            return result ? Results.Ok() : Results.BadRequest(new { error = "Geçersiz token." });
+            return result ? Results.Ok() : Results.BadRequest(new { error = AuthMessages.InvalidToken });
         })
         .WithName("RevokeToken")
         .Produces(StatusCodes.Status200OK)
@@ -92,21 +93,19 @@ public static class AuthEndpoints
             }
 
             await mediator.Send(new LogoutCommand(userId));
-            return Results.Ok(new { message = "Başarıyla çıkış yapıldı." });
+            return Results.Ok(new { message = AuthMessages.LogoutSuccessful });
         })
         .WithName("Logout")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
         .RequireAuthorization();
 
-        // --- Email Verification Endpoints ---
-
         group.MapGet("/verify-email", async (string email, string token, IMediator mediator) =>
         {
             var result = await mediator.Send(new VerifyEmailCommand(email, token));
             return result
-                ? Results.Ok(new { message = "Email adresiniz başarıyla doğrulandı." })
-                : Results.BadRequest(new { error = "Geçersiz veya süresi dolmuş doğrulama bağlantısı." });
+                ? Results.Ok(new { message = AuthMessages.EmailVerified })
+                : Results.BadRequest(new { error = AuthMessages.InvalidOrExpiredVerificationLink });
         })
         .WithName("VerifyEmail")
         .Produces(StatusCodes.Status200OK)
@@ -118,8 +117,8 @@ public static class AuthEndpoints
             {
                 var result = await mediator.Send(command);
                 return result
-                    ? Results.Ok(new { message = "Doğrulama emaili tekrar gönderildi." })
-                    : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
+                    ? Results.Ok(new { message = AuthMessages.VerificationEmailResent })
+                    : Results.NotFound(new { error = AuthMessages.UserNotFound });
             }
             catch (InvalidOperationException ex)
             {
@@ -132,12 +131,10 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .RequireRateLimiting("register");
 
-        // --- Password Reset Endpoints ---
-
         group.MapPost("/forgot-password", async (ForgotPasswordCommand command, IMediator mediator) =>
         {
             await mediator.Send(command);
-            return Results.Ok(new { message = "Şifre sıfırlama bağlantısı email adresinize gönderildi." });
+            return Results.Ok(new { message = AuthMessages.PasswordResetLinkSent });
         })
         .WithName("ForgotPassword")
         .Produces(StatusCodes.Status200OK)
@@ -147,8 +144,8 @@ public static class AuthEndpoints
         {
             var result = await mediator.Send(command);
             return result
-                ? Results.Ok(new { message = "Şifreniz başarıyla güncellendi." })
-                : Results.BadRequest(new { error = "Geçersiz veya süresi dolmuş sıfırlama bağlantısı." });
+                ? Results.Ok(new { message = AuthMessages.PasswordUpdated })
+                : Results.BadRequest(new { error = AuthMessages.InvalidOrExpiredResetLink });
         })
         .WithName("ResetPassword")
         .Produces(StatusCodes.Status200OK)
