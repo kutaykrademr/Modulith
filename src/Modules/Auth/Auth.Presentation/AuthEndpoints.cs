@@ -1,6 +1,7 @@
 using Auth.Application.Auth;
 using Auth.Application.ForgotPassword;
 using Auth.Application.Login;
+using Auth.Application.Logout;
 using Auth.Application.RefreshToken;
 using Auth.Application.Register;
 using Auth.Application.ResendVerification;
@@ -11,6 +12,7 @@ using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using System.Security.Claims;
 
 namespace Auth.Presentation;
 
@@ -81,6 +83,22 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
+        group.MapPost("/logout", async (ClaimsPrincipal user, IMediator mediator) =>
+        {
+            var userIdClaim = user.FindFirstValue("sub");
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim, out var userId))
+            {
+                return Results.Unauthorized();
+            }
+
+            await mediator.Send(new LogoutCommand(userId));
+            return Results.Ok(new { message = "Başarıyla çıkış yapıldı." });
+        })
+        .WithName("Logout")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .RequireAuthorization();
+
         // --- Email Verification Endpoints ---
 
         group.MapGet("/verify-email", async (string email, string token, IMediator mediator) =>
@@ -140,4 +158,3 @@ public static class AuthEndpoints
         return app;
     }
 }
-
