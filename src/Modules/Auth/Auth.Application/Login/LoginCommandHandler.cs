@@ -40,6 +40,12 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenRes
             throw new UnauthorizedAccessException("Geçersiz email veya şifre.");
         }
 
+        // Email doğrulanmış mı kontrol et
+        if (!user.IsEmailVerified)
+        {
+            throw new UnauthorizedAccessException("Email adresiniz doğrulanmamış. Lütfen email kutunuzu kontrol edin.");
+        }
+
         // Access Token üret
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
 

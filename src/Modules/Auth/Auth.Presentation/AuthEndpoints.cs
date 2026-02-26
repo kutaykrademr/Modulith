@@ -2,7 +2,9 @@ using Auth.Application.Auth;
 using Auth.Application.Login;
 using Auth.Application.RefreshToken;
 using Auth.Application.Register;
+using Auth.Application.ResendVerification;
 using Auth.Application.RevokeToken;
+using Auth.Application.VerifyEmail;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -76,6 +78,39 @@ public static class AuthEndpoints
         .WithName("RevokeToken")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
+
+        // --- Email Verification Endpoints ---
+
+        group.MapGet("/verify-email", async (string email, string token, IMediator mediator) =>
+        {
+            var result = await mediator.Send(new VerifyEmailCommand(email, token));
+            return result
+                ? Results.Ok(new { message = "Email adresiniz başarıyla doğrulandı." })
+                : Results.BadRequest(new { error = "Geçersiz veya süresi dolmuş doğrulama bağlantısı." });
+        })
+        .WithName("VerifyEmail")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        group.MapPost("/resend-verification", async (ResendVerificationCommand command, IMediator mediator) =>
+        {
+            try
+            {
+                var result = await mediator.Send(command);
+                return result
+                    ? Results.Ok(new { message = "Doğrulama emaili tekrar gönderildi." })
+                    : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ResendVerification")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .RequireRateLimiting("register");
 
         return app;
     }
