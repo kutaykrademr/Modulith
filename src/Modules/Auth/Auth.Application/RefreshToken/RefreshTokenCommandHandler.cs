@@ -1,6 +1,7 @@
 using Auth.Application.Auth;
 using Auth.Domain.Abstractions;
 using MediatR;
+using Auth.Application.Constants;
 
 namespace Auth.Application.RefreshToken;
 
@@ -26,7 +27,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var existingToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken, cancellationToken);
         if (existingToken is null || !existingToken.IsActive)
         {
-            throw new UnauthorizedAccessException("Geçersiz veya süresi dolmuş refresh token.");
+            throw new UnauthorizedAccessException(AuthMessages.InvalidOrExpiredRefreshToken);
         }
 
         // Eski token'ı revoke et (Token Rotation)
@@ -36,7 +37,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var user = await _userRepository.GetByIdAsync(existingToken.UserId, cancellationToken);
         if (user is null)
         {
-            throw new UnauthorizedAccessException("Kullanıcı bulunamadı.");
+            throw new UnauthorizedAccessException(AuthMessages.UserNotFound);
         }
 
         // Yeni Access + Refresh Token çifti üret

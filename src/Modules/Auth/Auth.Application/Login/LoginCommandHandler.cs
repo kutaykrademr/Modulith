@@ -1,7 +1,7 @@
 using Auth.Application.Auth;
 using Auth.Domain.Abstractions;
-using Auth.Domain.Entities;
 using MediatR;
+using Auth.Application.Constants;
 
 namespace Auth.Application.Login;
 
@@ -30,20 +30,20 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenRes
         var user = await _userRepository.GetByEmailAsync(request.Email.ToLowerInvariant(), cancellationToken);
         if (user is null)
         {
-            throw new UnauthorizedAccessException("Geçersiz email veya şifre.");
+            throw new UnauthorizedAccessException(AuthMessages.InvalidEmailOrPassword);
         }
 
         // Şifreyi doğrula
         var isPasswordValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
         if (!isPasswordValid)
         {
-            throw new UnauthorizedAccessException("Geçersiz email veya şifre.");
+            throw new UnauthorizedAccessException(AuthMessages.InvalidEmailOrPassword);
         }
 
         // Email doğrulanmış mı kontrol et
         if (!user.IsEmailVerified)
         {
-            throw new UnauthorizedAccessException("Email adresiniz doğrulanmamış. Lütfen email kutunuzu kontrol edin.");
+            throw new UnauthorizedAccessException(AuthMessages.EmailNotVerified);
         }
 
         // Access Token üret
