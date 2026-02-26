@@ -30,6 +30,7 @@ public static class AuthModuleServiceRegistration
         // Services
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
 
         // MediatR - Application katmanındaki handler'ları register et
         services.AddMediatR(cfg =>

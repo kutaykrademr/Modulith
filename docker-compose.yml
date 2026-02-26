@@ -24,5 +24,13 @@ services:
     depends_on:
       - modulith-db
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: modulith-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+
 volumes:
   modulith_pgdata:
