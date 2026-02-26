@@ -47,7 +47,6 @@ public static class AuthModuleServiceRegistration
         })
         .AddJwtBearer(options =>
         {
-            options.MapInboundClaims = false; // Token'daki claim isimleri olduğu gibi kalır (sub, email, name)
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
