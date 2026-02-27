@@ -46,7 +46,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
 
         // Doğrulama emaili gönder
         var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:5116";
-        var verificationLink = $"{baseUrl}/api/auth/verify-email?email={Uri.EscapeDataString(user.Email)}&token={user.EmailVerificationToken}";
+        var verificationLink = $"{baseUrl}/api/v1/auth/email/verify?email={Uri.EscapeDataString(user.Email)}&token={user.EmailVerificationToken}";
 
         var htmlBody = $"""
             <h2>Hoş Geldiniz!</h2>
