@@ -21,7 +21,7 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/auth")
+        var group = app.MapGroup("/api/v1/auth")
             .WithTags("Auth")
             .RequireRateLimiting("fixed");
 
@@ -75,7 +75,7 @@ public static class AuthEndpoints
         .Produces<TokenResponse>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized);
 
-        group.MapPost("/revoke", async (RevokeTokenCommand command, IMediator mediator) =>
+        group.MapPost("/token/revoke", async (RevokeTokenCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
             return result ? Results.Ok() : Results.BadRequest(new { error = AuthMessages.InvalidToken });
@@ -100,7 +100,7 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status401Unauthorized)
         .RequireAuthorization();
 
-        group.MapGet("/verify-email", async (string email, string token, IMediator mediator) =>
+        group.MapGet("/email/verify", async (string email, string token, IMediator mediator) =>
         {
             var result = await mediator.Send(new VerifyEmailCommand(email, token));
             return result
@@ -111,7 +111,7 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
-        group.MapPost("/resend-verification", async (ResendVerificationCommand command, IMediator mediator) =>
+        group.MapPost("/email/verify/send", async (ResendVerificationCommand command, IMediator mediator) =>
         {
             try
             {
@@ -131,7 +131,7 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .RequireRateLimiting("register");
 
-        group.MapPost("/forgot-password", async (ForgotPasswordCommand command, IMediator mediator) =>
+        group.MapPost("/password/forgot", async (ForgotPasswordCommand command, IMediator mediator) =>
         {
             await mediator.Send(command);
             return Results.Ok(new { message = AuthMessages.PasswordResetLinkSent });
@@ -140,7 +140,7 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status200OK)
         .RequireRateLimiting("register");
 
-        group.MapPost("/reset-password", async (ResetPasswordCommand command, IMediator mediator) =>
+        group.MapPost("/password/reset", async (ResetPasswordCommand command, IMediator mediator) =>
         {
             var result = await mediator.Send(command);
             return result
