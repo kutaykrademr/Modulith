@@ -1,5 +1,6 @@
 using Auth.Infrastructure;
-using Auth.Infrastructure.Persistence;
+using Shared.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Auth.Presentation;
 using Scalar.AspNetCore;
 using Modulith.Api.Extensions;
@@ -17,6 +18,12 @@ builder.Services.AddOpenApi(options =>
 // Rate Limiting (Ayrı dosyadan merkezi yönetim)
 builder.Services.AddCustomRateLimiting(builder.Configuration);
 
+// EF Core - PostgreSQL (Shared DbContext)
+builder.Services.AddDbContext<ModulithDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("ModulithDb"),
+        npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory")));
+
 // Auth Module — tüm DI kayıtları burada
 builder.Services.AddAuthModule(builder.Configuration);
 
@@ -33,7 +40,7 @@ if (app.Environment.IsDevelopment())
     });
 
     using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ModulithDbContext>();
 
     await dbContext.Database.EnsureDeletedAsync();
     await dbContext.Database.EnsureCreatedAsync();

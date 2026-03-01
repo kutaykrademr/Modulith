@@ -17,11 +17,7 @@ public static class AuthModuleServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // EF Core - PostgreSQL
-        services.AddDbContext<AuthDbContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("AuthDb"),
-                npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "auth")));
+        // Database connection will be handled in Host API
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
