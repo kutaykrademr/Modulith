@@ -10,4 +10,7 @@
     <Project Path="src/Modules/Auth/Auth.Infrastructure/Auth.Infrastructure.csproj" />
     <Project Path="src/Modules/Auth/Auth.Presentation/Auth.Presentation.csproj" />
   </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
+  </Folder>
 </Solution>
