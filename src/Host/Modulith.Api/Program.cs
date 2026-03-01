@@ -42,8 +42,9 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ModulithDbContext>();
 
-    await dbContext.Database.EnsureDeletedAsync();
-    await dbContext.Database.EnsureCreatedAsync();
+    // Geliştirme kolaylığı için uygulamayı ayağa kaldırırken bekleyen migration'ları otomatik uygula.
+    // DİKKAT: EnsureCreated() ve EnsureDeleted() sadece prototipleme içindir, Migration altyapısını bozarlar.
+    await dbContext.Database.MigrateAsync();
 }
 
 app.UseHttpsRedirection();
