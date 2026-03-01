@@ -34,7 +34,7 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
 
         // Şifre sıfırlama emaili gönder
         var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:5116";
-        var resetLink = $"{baseUrl}/api/auth/reset-password?email={Uri.EscapeDataString(user.Email)}&token={user.PasswordResetToken}";
+        var resetLink = $"{baseUrl}/api/v1/auth/password/reset?email={Uri.EscapeDataString(user.Email)}&token={user.PasswordResetToken}";
 
         var htmlBody = $"""
             <h2>Şifre Sıfırlama</h2>
