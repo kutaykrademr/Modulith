@@ -1,7 +1,9 @@
 using Auth.Infrastructure;
+using User.Infrastructure;
 using Shared.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Auth.Presentation;
+using User.Presentation;
 using Scalar.AspNetCore;
 using Modulith.Api.Extensions;
 using Modulith.Api.Extensions.Transformers;
@@ -26,6 +28,7 @@ builder.Services.AddDbContext<ModulithDbContext>(options =>
 
 // Auth Module — tüm DI kayıtları burada
 builder.Services.AddAuthModule(builder.Configuration);
+builder.Services.AddUserModule(builder.Configuration);
 
 var app = builder.Build();
 
@@ -57,5 +60,6 @@ app.UseAuthorization();
 
 // Auth endpoints — /api/auth/*
 app.MapAuthEndpoints();
+app.MapUserEndpoints();
 
 app.Run();
