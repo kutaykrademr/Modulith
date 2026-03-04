@@ -1,3 +1,3 @@
-namespace Auth.Application.Auth;
+namespace Auth.Application.Common;
 
 public sealed record TokenResponse(string AccessToken, string RefreshToken, DateTime ExpiresAtUtc);

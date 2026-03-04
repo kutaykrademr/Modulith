@@ -1,6 +1,7 @@
 using Auth.Infrastructure;
 using User.Infrastructure;
 using Shared.Infrastructure.Persistence;
+using Shared.Contracts.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Auth.Presentation;
 using User.Presentation;
@@ -25,6 +26,9 @@ builder.Services.AddDbContext<ModulithDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("ModulithDb"),
         npgsqlOptions => npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory")));
+
+// Unit of Work — modüller arası transaction yönetimi
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Auth Module — tüm DI kayıtları burada
 builder.Services.AddAuthModule(builder.Configuration);

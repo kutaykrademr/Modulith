@@ -2,9 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Infrastructure.Persistence;
 using User.Domain.Abstractions;
 using User.Domain.Entities;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace User.Infrastructure.Persistence.Repositories;
 
