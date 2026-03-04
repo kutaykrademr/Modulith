@@ -1,4 +1,4 @@
-using Auth.Application.Auth;
+using Auth.Application.Common;
 using Auth.Domain.Abstractions;
 using MediatR;
 using Auth.Application.Constants;

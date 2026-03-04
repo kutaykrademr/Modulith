@@ -1,4 +1,4 @@
-using Auth.Application.Auth;
+using Auth.Application.Common;
 using MediatR;
 
 namespace Auth.Application.RefreshToken;
