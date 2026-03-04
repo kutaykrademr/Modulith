@@ -53,6 +53,8 @@ if (app.Environment.IsDevelopment())
     await dbContext.Database.EnsureCreatedAsync();
 }
 
+app.UseGlobalExceptionHandler();
+
 app.UseHttpsRedirection();
 
 // Rate Limiter middleware — Authentication'dan önce

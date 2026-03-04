@@ -2,6 +2,7 @@ using Auth.Application.Common;
 using Auth.Domain.Abstractions;
 using MediatR;
 using Auth.Application.Constants;
+using Microsoft.Extensions.Configuration;
 
 namespace Auth.Application.Login;
 
@@ -11,17 +12,20 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenRes
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IConfiguration _configuration;
 
     public LoginCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IJwtTokenService jwtTokenService,
-        IRefreshTokenRepository refreshTokenRepository)
+        IRefreshTokenRepository refreshTokenRepository,
+        IConfiguration configuration)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtTokenService = jwtTokenService;
         _refreshTokenRepository = refreshTokenRepository;
+        _configuration = configuration;
     }
 
     public async Task<TokenResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -50,11 +54,12 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenRes
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
 
         // Refresh Token üret ve kaydet
+        var refreshExpiryDays = _configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays", 7);
         var refreshTokenValue = _jwtTokenService.GenerateRefreshToken();
         var refreshToken = Domain.Entities.RefreshToken.Create(
             refreshTokenValue,
             user.Id,
-            DateTime.UtcNow.AddDays(7));
+            DateTime.UtcNow.AddDays(refreshExpiryDays));
 
         await _refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
         await _refreshTokenRepository.SaveChangesAsync(cancellationToken);

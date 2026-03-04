@@ -1,5 +1,8 @@
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Shared.Contracts.Behaviors;
 using User.Domain.Abstractions;
 using User.Infrastructure.Persistence.Repositories;
 
@@ -14,9 +17,15 @@ public static class UserModuleServiceRegistration
         // Repositories
         services.AddScoped<IProfileRepository, ProfileRepository>();
 
-        // MediatR - Application katmanindaki handler'lari register et
+        // Validators
+        services.AddValidatorsFromAssembly(typeof(Application.Profiles.GetProfile.GetProfileQuery).Assembly);
+
+        // MediatR + ValidationBehavior
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(Application.Profiles.GetProfile.GetProfileQuery).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(Application.Profiles.GetProfile.GetProfileQuery).Assembly);
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
 
         return services;
     }
