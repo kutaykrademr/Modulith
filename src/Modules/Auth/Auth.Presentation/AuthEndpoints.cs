@@ -27,18 +27,8 @@ public static class AuthEndpoints
         // POST /register → 201 Created (RFC 9110 §9.3.3)
         group.MapPost("/register", async (RegisterCommand command, IMediator mediator) =>
         {
-            try
-            {
-                var result = await mediator.Send(command);
-                return Results.Created($"/api/v1/users/{result.UserId}/profile", result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status409Conflict,
-                    title: "Conflict");
-            }
+            var result = await mediator.Send(command);
+            return Results.Created($"/api/v1/users/{result.UserId}/profile", result);
         })
         .WithName("Register")
         .Produces<RegisterResponse>(StatusCodes.Status201Created)
@@ -48,18 +38,8 @@ public static class AuthEndpoints
         // POST /login → 200 OK
         group.MapPost("/login", async (LoginCommand command, IMediator mediator) =>
         {
-            try
-            {
-                var result = await mediator.Send(command);
-                return Results.Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status401Unauthorized,
-                    title: "Unauthorized");
-            }
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
         })
         .WithName("Login")
         .Produces<TokenResponse>(StatusCodes.Status200OK)
@@ -69,18 +49,8 @@ public static class AuthEndpoints
         // POST /refresh → 200 OK
         group.MapPost("/refresh", async (RefreshTokenCommand command, IMediator mediator) =>
         {
-            try
-            {
-                var result = await mediator.Send(command);
-                return Results.Ok(result);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status401Unauthorized,
-                    title: "Unauthorized");
-            }
+            var result = await mediator.Send(command);
+            return Results.Ok(result);
         })
         .WithName("RefreshToken")
         .Produces<TokenResponse>(StatusCodes.Status200OK)
@@ -139,23 +109,13 @@ public static class AuthEndpoints
         // POST /email/verify/send → 202 Accepted (RFC 9110 §15.3.3)
         group.MapPost("/email/verify/send", async (ResendVerificationCommand command, IMediator mediator) =>
         {
-            try
-            {
-                var result = await mediator.Send(command);
-                return result
-                    ? Results.Accepted(value: new { message = "Doğrulama emaili tekrar gönderildi." })
-                    : Results.Problem(
-                        detail: "Kullanıcı bulunamadı.",
-                        statusCode: StatusCodes.Status404NotFound,
-                        title: "Not Found");
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Problem(
-                    detail: ex.Message,
-                    statusCode: StatusCodes.Status409Conflict,
-                    title: "Conflict");
-            }
+            var result = await mediator.Send(command);
+            return result
+                ? Results.Accepted(value: new { message = "Doğrulama emaili tekrar gönderildi." })
+                : Results.Problem(
+                    detail: "Kullanıcı bulunamadı.",
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Not Found");
         })
         .WithName("ResendVerification")
         .Produces(StatusCodes.Status202Accepted)

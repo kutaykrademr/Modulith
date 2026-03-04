@@ -1,13 +1,14 @@
 using System.Text;
 using Auth.Domain.Abstractions;
-using Auth.Infrastructure.Persistence;
 using Auth.Infrastructure.Persistence.Repositories;
 using Auth.Infrastructure.Services;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Contracts.Behaviors;
 
 namespace Auth.Infrastructure;
 
@@ -17,8 +18,6 @@ public static class AuthModuleServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Database connection will be handled in Host API
-
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -28,9 +27,15 @@ public static class AuthModuleServiceRegistration
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<IEmailService, SmtpEmailService>();
 
-        // MediatR - Application katmanındaki handler'ları register et
+        // Validators
+        services.AddValidatorsFromAssembly(typeof(Application.Register.RegisterCommand).Assembly);
+
+        // MediatR + ValidationBehavior
         services.AddMediatR(cfg =>
-            cfg.RegisterServicesFromAssembly(typeof(Application.Register.RegisterCommand).Assembly));
+        {
+            cfg.RegisterServicesFromAssembly(typeof(Application.Register.RegisterCommand).Assembly);
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
 
         // JWT Authentication
         var jwtSecret = configuration["Jwt:Secret"]!;
@@ -53,7 +58,7 @@ public static class AuthModuleServiceRegistration
                 ValidIssuer = configuration["Jwt:Issuer"],
                 ValidAudience = configuration["Jwt:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ClockSkew = TimeSpan.Zero // Token süresi tam olarak dolsun
+                ClockSkew = TimeSpan.Zero
             };
         });
 
