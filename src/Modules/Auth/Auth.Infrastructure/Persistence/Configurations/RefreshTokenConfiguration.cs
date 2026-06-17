@@ -12,11 +12,12 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Token)
+        // Ham token değil SHA-256 özeti saklanır (64 hex karakter).
+        builder.Property(x => x.TokenHash)
             .IsRequired()
-            .HasMaxLength(512);
+            .HasMaxLength(64);
 
-        builder.HasIndex(x => x.Token)
+        builder.HasIndex(x => x.TokenHash)
             .IsUnique();
 
         builder.Property(x => x.CreatedAtUtc)

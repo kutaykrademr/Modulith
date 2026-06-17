@@ -1,5 +1,6 @@
 using Auth.Application.Common;
 using Auth.Domain.Abstractions;
+using Auth.Domain.Services;
 using MediatR;
 using Auth.Application.Constants;
 using Microsoft.Extensions.Configuration;
@@ -32,8 +33,12 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenRes
     {
         // Kullanıcıyı bul
         var user = await _userRepository.GetByEmailAsync(request.Email.ToLowerInvariant(), cancellationToken);
+
+        // Email enumeration / timing saldırılarına karşı: kullanıcı yoksa da sabit maliyetli
+        // bir hash doğrulaması yap ki yanıt süresi hesabın var olup olmadığını ele vermesin.
         if (user is null)
         {
+            _passwordHasher.VerifyDummy(request.Password);
             throw new UnauthorizedAccessException(AuthMessages.InvalidEmailOrPassword);
         }
 
@@ -53,11 +58,11 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, TokenRes
         // Access Token üret
         var accessToken = _jwtTokenService.GenerateAccessToken(user);
 
-        // Refresh Token üret ve kaydet
+        // Refresh Token üret ve kaydet (ham token kullanıcıya döner, DB'ye özeti yazılır)
         var refreshExpiryDays = _configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays", 7);
         var refreshTokenValue = _jwtTokenService.GenerateRefreshToken();
         var refreshToken = Domain.Entities.RefreshToken.Create(
-            refreshTokenValue,
+            TokenHasher.Hash(refreshTokenValue),
             user.Id,
             DateTime.UtcNow.AddDays(refreshExpiryDays));
 

@@ -7,13 +7,16 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
 
     public ResetPasswordCommandHandler(
         IUserRepository userRepository,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        IRefreshTokenRepository refreshTokenRepository)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
+        _refreshTokenRepository = refreshTokenRepository;
     }
 
     public async Task<bool> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
@@ -30,6 +33,8 @@ public sealed class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordC
 
         if (result)
         {
+            // Güvenlik: şifre değiştiğinde mevcut tüm refresh token'ları (oturumları) iptal et.
+            await _refreshTokenRepository.RevokeAllForUserAsync(user.Id, cancellationToken);
             await _userRepository.SaveChangesAsync(cancellationToken);
         }
 

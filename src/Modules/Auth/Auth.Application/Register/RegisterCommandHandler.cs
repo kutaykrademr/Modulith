@@ -45,8 +45,9 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
         // Password'ü hashle
         var passwordHash = _passwordHasher.Hash(request.Password);
 
-        // User entity oluştur (token otomatik üretilir)
+        // User entity oluştur ve email doğrulama token'ı üret (ham token döner, DB'ye özeti yazılır)
         var user = User.Create(request.Email, request.FullName, passwordHash);
+        var verificationToken = user.GenerateEmailVerificationToken();
 
         // UoW: Transaction başlat — tüm modüllerin değişiklikleri atomik olacak
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -76,7 +77,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
 
         // Doğrulama emaili gönder (transaction dışında — email gönderimi DB ile ilgili değil)
         var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:5116";
-        var verificationLink = $"{baseUrl}/api/v1/auth/email/verify?email={Uri.EscapeDataString(user.Email)}&token={user.EmailVerificationToken}";
+        var verificationLink = $"{baseUrl}/api/v1/auth/email/verify?email={Uri.EscapeDataString(user.Email)}&token={verificationToken}";
 
         var htmlBody = $"""
             <h2>Hoş Geldiniz!</h2>
