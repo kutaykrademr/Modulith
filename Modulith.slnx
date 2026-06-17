@@ -10,7 +10,17 @@
     <Project Path="src/Modules/Auth/Auth.Infrastructure/Auth.Infrastructure.csproj" />
     <Project Path="src/Modules/Auth/Auth.Presentation/Auth.Presentation.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/User/">
+    <Project Path="src/Modules/User/User.Application/User.Application.csproj" />
+    <Project Path="src/Modules/User/User.Domain/User.Domain.csproj" />
+    <Project Path="src/Modules/User/User.Infrastructure/User.Infrastructure.csproj" />
+    <Project Path="src/Modules/User/User.Presentation/User.Presentation.csproj" />
+  </Folder>
   <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Shared.Contracts/Shared.Contracts.csproj" />
     <Project Path="src/Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Modulith.IntegrationTests/Modulith.IntegrationTests.csproj" />
   </Folder>
 </Solution>

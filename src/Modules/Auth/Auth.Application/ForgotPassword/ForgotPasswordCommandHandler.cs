@@ -28,13 +28,13 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
         if (user is null)
             return true;
 
-        // Reset token üret ve kaydet
-        user.GeneratePasswordResetToken();
+        // Reset token üret ve kaydet (ham token döner, DB'ye özeti yazılır)
+        var resetToken = user.GeneratePasswordResetToken();
         await _userRepository.SaveChangesAsync(cancellationToken);
 
         // Şifre sıfırlama emaili gönder
         var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:5116";
-        var resetLink = $"{baseUrl}/api/v1/auth/password/reset?email={Uri.EscapeDataString(user.Email)}&token={user.PasswordResetToken}";
+        var resetLink = $"{baseUrl}/api/v1/auth/password/reset?email={Uri.EscapeDataString(user.Email)}&token={resetToken}";
 
         var htmlBody = $"""
             <h2>Şifre Sıfırlama</h2>

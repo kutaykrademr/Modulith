@@ -28,5 +28,12 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
+
+        // Token'lar düz metin değil SHA-256 özeti olarak saklanır (64 hex karakter).
+        builder.Property(x => x.EmailVerificationTokenHash)
+            .HasMaxLength(64);
+
+        builder.Property(x => x.PasswordResetTokenHash)
+            .HasMaxLength(64);
     }
 }

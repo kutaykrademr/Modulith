@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Auth.Domain.Services;
 
 namespace Auth.Domain.Entities;
 
@@ -10,13 +11,13 @@ public sealed class User
     public string PasswordHash { get; private set; } = default!;
     public DateTime CreatedAtUtc { get; private set; }
 
-    // Email Verification
+    // Email Verification — token DB'de SHA-256 özeti olarak saklanır (düz metin değil).
     public bool IsEmailVerified { get; private set; }
-    public string? EmailVerificationToken { get; private set; }
+    public string? EmailVerificationTokenHash { get; private set; }
     public DateTime? EmailVerificationTokenExpiresAtUtc { get; private set; }
 
-    // Password Reset
-    public string? PasswordResetToken { get; private set; }
+    // Password Reset — token DB'de SHA-256 özeti olarak saklanır (düz metin değil).
+    public string? PasswordResetTokenHash { get; private set; }
     public DateTime? PasswordResetTokenExpiresAtUtc { get; private set; }
 
     private User() { } // EF Core için parameterless constructor
@@ -33,18 +34,19 @@ public sealed class User
             IsEmailVerified = false
         };
 
-        user.GenerateEmailVerificationToken();
-
         return user;
     }
 
     /// <summary>
     /// Yeni bir email doğrulama token'ı üretir (24 saat geçerli).
+    /// Ham token'ı döner (e-postaya konacak); DB'ye yalnızca özeti yazılır.
     /// </summary>
-    public void GenerateEmailVerificationToken()
+    public string GenerateEmailVerificationToken()
     {
-        EmailVerificationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        EmailVerificationTokenHash = TokenHasher.Hash(rawToken);
         EmailVerificationTokenExpiresAtUtc = DateTime.UtcNow.AddHours(24);
+        return rawToken;
     }
 
     /// <summary>
@@ -55,26 +57,28 @@ public sealed class User
         if (IsEmailVerified)
             return true;
 
-        if (EmailVerificationToken is null ||
-            !string.Equals(EmailVerificationToken, token, StringComparison.OrdinalIgnoreCase))
+        if (EmailVerificationTokenHash is null || !TokenHasher.Verify(token, EmailVerificationTokenHash))
             return false;
 
         if (EmailVerificationTokenExpiresAtUtc.HasValue && DateTime.UtcNow > EmailVerificationTokenExpiresAtUtc.Value)
             return false;
 
         IsEmailVerified = true;
-        EmailVerificationToken = null;
+        EmailVerificationTokenHash = null;
         EmailVerificationTokenExpiresAtUtc = null;
         return true;
     }
 
     /// <summary>
     /// Yeni bir şifre sıfırlama token'ı üretir (1 saat geçerli).
+    /// Ham token'ı döner (e-postaya konacak); DB'ye yalnızca özeti yazılır.
     /// </summary>
-    public void GeneratePasswordResetToken()
+    public string GeneratePasswordResetToken()
     {
-        PasswordResetToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        PasswordResetTokenHash = TokenHasher.Hash(rawToken);
         PasswordResetTokenExpiresAtUtc = DateTime.UtcNow.AddHours(1);
+        return rawToken;
     }
 
     /// <summary>
@@ -82,15 +86,14 @@ public sealed class User
     /// </summary>
     public bool ResetPassword(string token, string newPasswordHash)
     {
-        if (PasswordResetToken is null ||
-            !string.Equals(PasswordResetToken, token, StringComparison.OrdinalIgnoreCase))
+        if (PasswordResetTokenHash is null || !TokenHasher.Verify(token, PasswordResetTokenHash))
             return false;
 
         if (PasswordResetTokenExpiresAtUtc.HasValue && DateTime.UtcNow > PasswordResetTokenExpiresAtUtc.Value)
             return false;
 
         PasswordHash = newPasswordHash;
-        PasswordResetToken = null;
+        PasswordResetTokenHash = null;
         PasswordResetTokenExpiresAtUtc = null;
         return true;
     }

@@ -3,7 +3,9 @@ namespace Auth.Domain.Entities;
 public sealed class RefreshToken
 {
     public Guid Id { get; private set; }
-    public string Token { get; private set; } = default!;
+
+    /// <summary>Ham token değil, ham token'ın SHA-256 özeti saklanır.</summary>
+    public string TokenHash { get; private set; } = default!;
     public Guid UserId { get; private set; }
     public User User { get; private set; } = default!;
     public DateTime CreatedAtUtc { get; private set; }
@@ -16,12 +18,12 @@ public sealed class RefreshToken
 
     private RefreshToken() { }
 
-    public static RefreshToken Create(string token, Guid userId, DateTime expiresAtUtc)
+    public static RefreshToken Create(string tokenHash, Guid userId, DateTime expiresAtUtc)
     {
         return new RefreshToken
         {
             Id = Guid.NewGuid(),
-            Token = token,
+            TokenHash = tokenHash,
             UserId = userId,
             CreatedAtUtc = DateTime.UtcNow,
             ExpiresAtUtc = expiresAtUtc

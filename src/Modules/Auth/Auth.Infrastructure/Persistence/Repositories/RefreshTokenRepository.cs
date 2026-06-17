@@ -20,10 +20,10 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         await _context.Set<RefreshToken>().AddAsync(refreshToken, cancellationToken);
     }
 
-    public async Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken cancellationToken = default)
+    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default)
     {
         return await _context.Set<RefreshToken>()
-            .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
     }
 
     public async Task RevokeAllForUserAsync(Guid userId, CancellationToken cancellationToken = default)

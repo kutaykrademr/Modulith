@@ -30,13 +30,13 @@ public sealed class ResendVerificationCommandHandler : IRequestHandler<ResendVer
         if (user.IsEmailVerified)
             throw new InvalidOperationException(AuthMessages.EmailAlreadyVerified);
 
-        // Yeni token üret
-        user.GenerateEmailVerificationToken();
+        // Yeni token üret (ham token döner, DB'ye özeti yazılır)
+        var verificationToken = user.GenerateEmailVerificationToken();
         await _userRepository.SaveChangesAsync(cancellationToken);
 
         // Doğrulama emaili gönder
         var baseUrl = _configuration["App:BaseUrl"] ?? "http://localhost:5116";
-        var verificationLink = $"{baseUrl}/api/v1/auth/email/verify?email={Uri.EscapeDataString(user.Email)}&token={user.EmailVerificationToken}";
+        var verificationLink = $"{baseUrl}/api/v1/auth/email/verify?email={Uri.EscapeDataString(user.Email)}&token={verificationToken}";
 
         var htmlBody = $"""
             <h2>Email Doğrulama</h2>
